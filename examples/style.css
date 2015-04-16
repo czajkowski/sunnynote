@@ -1,3 +1,9 @@
+
+p {
+    padding: 0;
+    margin: 0; 
+}
+
 .wrapper {
     border: 1px solid;
     display: inline-block;
@@ -6,17 +12,13 @@
 
 .note-editable {
     height: 300px;
-    width: 400px;
+    width: 600px;
     overflow: auto;
 }
 
 .preview {
     height: 300px;
-    width: 400px;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    display: inline-block;
-    vertical-align: top;
+    width: 600px;
+    overflow: auto;
 }
 

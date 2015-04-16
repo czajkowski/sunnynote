@@ -79,8 +79,5 @@ grunt server
 * JSHint: http://www.jshint.com/about/
 * JSHint rule: https://github.com/czajkowski/sunnynote/blob/master/.jshintrc
 
-### Contacts
-* Email: czajkowski.piotr@gmail.com
-
 ### License
 Sunnynote may be freely distributed under the MIT license.
