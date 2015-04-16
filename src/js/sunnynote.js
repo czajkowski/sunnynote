@@ -6,7 +6,8 @@ define([
     'sunnynote/defaults',
     'sunnynote/EventHandler',
     'sunnynote/Renderer'
-], function (agent, list, dom, range, defaults, EventHandler, Renderer) {
+], function (agent, list, dom, range,
+    defaults, EventHandler, Renderer) {
 
     // jQuery namespace for sunnynote
     /**
@@ -44,9 +45,103 @@ define([
             agent: agent,
             dom: dom,
             range: range
-        }
+        },
+        /** 
+         * @property {Object}
+         * pluginEvents event list for plugins
+         * event has name and callback function.
+         *
+         * ```
+         * $.sunnynote.addPlugin({
+         *     events : {
+         *          'hello' : function(layoutInfo, value, $target) {
+         *              console.log('event name is hello, value is ' + value );
+         *          }
+         *     }
+         * })
+         * ```
+         *
+         * * event name is data-event property.
+         * * layoutInfo is a sunnynote layout information.
+         * * value is data-value property.
+         */
+        pluginEvents: {},
+
+        plugins: []
     });
 
+    /**
+     * @method addPlugin
+     *
+     * add Plugin in Summernote
+     *
+     * Summernote can make a own plugin.
+     *
+     * ### Define plugin
+     * ```
+     * // get template function
+     * var tmpl = $.sunnynote.renderer.getTemplate();
+     *
+     * // add a button
+     * $.sunnynote.addPlugin({
+     *     buttons : {
+     *        // "hello"  is button's namespace.
+     *        "hello" : function(lang, options) {
+     *            // make icon button by template function
+     *            return tmpl.iconButton('fa fa-header', {
+     *                // callback function name when button clicked
+     *                event : 'hello',
+     *                // set data-value property
+     *                value : 'hello',
+     *                hide : true
+     *            });
+     *        }
+     *
+     *     },
+     *
+     *     events : {
+     *        "hello" : function(layoutInfo, value) {
+     *            // here is event code
+     *        }
+     *     }
+     * });
+     * ```
+     * ### Use a plugin in toolbar
+     *
+     * ```
+     *    $("#editor").sunnynote({
+     *    ...
+     *    toolbar : [
+     *        // display hello plugin in toolbar
+     *        ['group', [ 'hello' ]]
+     *    ]
+     *    ...
+     *    });
+     * ```
+     *
+     *
+     * @param {Object} plugin
+     * @param {Object} [plugin.buttons] define plugin button. for detail, see to Renderer.addButtonInfo
+     * @param {Object} [plugin.dialogs] define plugin dialog. for detail, see to Renderer.addDialogInfo
+     * @param {Object} [plugin.events] add event in $.sunnynote.pluginEvents
+     * @param {Object} [plugin.langs] update $.sunnynote.lang
+     * @param {Object} [plugin.options] update $.sunnynote.options
+     */
+    $.sunnynote.addPlugin = function (plugin) {
+
+        // save plugin list
+        $.sunnynote.plugins.push(plugin);
+
+        if (plugin.events) {
+            $.each(plugin.events, function (name, event) {
+                $.sunnynote.pluginEvents[name] = event;
+            });
+        }
+
+        if (plugin.options) {
+            $.extend($.sunnynote.options, plugin.options);
+        }
+    };
 
     /*
      * extend $.fn
@@ -189,7 +284,7 @@ define([
                 var options = info.editor().data('options');
 
                 eventHandler.detach(info, options);
-                renderer.removeLayout($holder, info);
+                renderer.removeLayout($holder, info, options);
             });
 
             return this;

@@ -65,6 +65,29 @@ define(['jquery'], function ($) {
     var isSupportAmd = typeof define === 'function' && define.amd;
 
     /**
+     * returns whether font is installed or not.
+     *
+     * @param {String} fontName
+     * @return {Boolean}
+     */
+    var isFontInstalled = function (fontName) {
+        var testFontName = fontName === 'Comic Sans MS' ? 'Courier New' : 'Comic Sans MS';
+        var $tester = $('<div>').css({
+            position: 'absolute',
+            left: '-9999px',
+            top: '-9999px',
+            fontSize: '200px'
+        }).text('mmmmmmmmmwwwwwww').appendTo(document.body);
+
+        var originalWidth = $tester.css('fontFamily', testFontName).width();
+        var width = $tester.css('fontFamily', fontName + ',' + testFontName).width();
+
+        $tester.remove();
+
+        return originalWidth !== width;
+    };
+
+    /**
      * @class core.agent
      *
      * Object which check platform and agent
@@ -82,6 +105,8 @@ define(['jquery'], function ($) {
         /** @property {String} jqueryVersion current jQuery version string  */
         jqueryVersion: parseFloat($.fn.jquery),
         isSupportAmd: isSupportAmd,
+        hasCodeMirror: isSupportAmd ? require.specified('CodeMirror') : !!window.CodeMirror,
+        isFontInstalled: isFontInstalled,
         isW3CRangeSupport: !!document.createRange
     };
 

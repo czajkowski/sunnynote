@@ -405,6 +405,12 @@ define([
 
             // isOnEditable: judge whether range is on editable or not
             this.isOnEditable = makeIsOn(dom.isEditable);
+            // isOnList: judge whether range is on list node or not
+            this.isOnList = makeIsOn(dom.isList);
+            // isOnAnchor: judge whether range is on anchor node or not
+            this.isOnAnchor = makeIsOn(dom.isAnchor);
+            // isOnAnchor: judge whether range is on cell node or not
+            this.isOnCell = makeIsOn(dom.isCell);
 
             /**
              * @param {Function} pred
