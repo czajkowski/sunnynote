@@ -51,9 +51,7 @@ define([
         };
 
         this.noteEditorFromHolder = function ($holder) {
-            if ($holder.hasClass('note-air-editor')) {
-                return $holder;
-            } else if ($holder.next().hasClass('note-editor')) {
+            if ($holder.next().hasClass('note-editor')) {
                 return $holder.next();
             } else {
                 return $();
@@ -67,11 +65,7 @@ define([
          * @param {Object} options
          */
         this.createLayout = function ($holder, options) {
-            // if (options.airMode) {
-            //   this.createLayoutByAirMode($holder, options);
-            // } else {
             this.createLayoutByFrame($holder, options);
-            // }
         };
 
         /**
@@ -97,24 +91,16 @@ define([
          *
          * @param {jQuery} $holder - placeholder
          * @param {Object} layoutInfo
-         * @param {Object} options
          *
          */
-        this.removeLayout = function ($holder, layoutInfo, options) {
-            if (options.airMode) {
-                $holder.removeClass('note-air-editor note-editable')
-                    .removeAttr('id contentEditable');
+         /*jslint unparam: true*/
+        this.removeLayout = function ($holder, layoutInfo) {
+            $holder.html(layoutInfo.editable().html());
 
-                layoutInfo.popover().remove();
-                layoutInfo.handle().remove();
-                layoutInfo.dialog().remove();
-            } else {
-                $holder.html(layoutInfo.editable().html());
-
-                layoutInfo.editor().remove();
-                $holder.show();
-            }
+            layoutInfo.editor().remove();
+            $holder.show();
         };
+        /*jslint unparam: false*/
 
     };
 
