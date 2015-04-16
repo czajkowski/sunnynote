@@ -100,9 +100,9 @@ define([
          * @param {Node} target
          * @return {Boolean} false if range is no
          */
-        this.currentStyle = function (target) {
+        this.currentStyle = function () {
             var rng = range.create();
-            return rng ? rng.isOnEditable() && style.current(rng, target) : false;
+            return rng ? rng.isOnEditable() && style.current(rng) : false;
         };
 
         var triggerOnBeforeChange = this.triggerOnBeforeChange = function ($editable) {

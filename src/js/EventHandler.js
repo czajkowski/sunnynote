@@ -121,6 +121,8 @@ define([
                 this.bindKeyMap(layoutInfo, options.keyMap[agent.isMac ? 'mac' : 'pc']);
             }
 
+            //layoutInfo.editable().on('keyup mouseup', hToolbarAndPopoverUpdate);
+
             // save options on editor
             layoutInfo.editor().data('options', options);
 

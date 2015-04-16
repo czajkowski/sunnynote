@@ -5,7 +5,7 @@
  * Copyright 2013-2015 Piotr Czajkowski. and other contributors
  * sunnynote may be freely distributed under the MIT license.
  *
- * Date: 2015-04-16T13:40Z
+ * Date: 2015-04-16T14:25Z
  */
 (function (factory) {
         /* global define */
@@ -2121,6 +2121,8 @@
             onkeyup: null, // keyup
             onkeydown: null, // keydown
             onsubmit: null,
+
+            onStyleChange : null,
 
             keyMap: {
                 pc: {

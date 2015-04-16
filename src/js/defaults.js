@@ -49,6 +49,8 @@ define('sunnynote/defaults', function () {
             onkeydown: null, // keydown
             onsubmit: null,
 
+            onStyleChange : null,
+
             keyMap: {
                 pc: {
                     'ENTER': 'insertParagraph',
