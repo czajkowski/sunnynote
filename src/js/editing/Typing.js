@@ -46,14 +46,6 @@ define([
             // on paragraph: split paragraph
             if (splitRoot) {
                 nextPara = dom.splitTree(splitRoot, rng.getStartPoint());
-
-                var emptyAnchors = dom.listDescendant(splitRoot, dom.isEmptyAnchor);
-                emptyAnchors = emptyAnchors.concat(dom.listDescendant(nextPara, dom.isEmptyAnchor));
-
-                $.each(emptyAnchors, function (idx, anchor) {
-                    dom.remove(anchor);
-                });
-                // no paragraph: insert empty paragraph
             } else {
                 var next = rng.sc.childNodes[rng.so];
                 nextPara = $(dom.emptyPara)[0];

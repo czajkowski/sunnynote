@@ -163,7 +163,7 @@ define([
 
         /* jshint ignore:start */
         // native commands(with execCommand), generate function for execCommand
-        var commands = ['bold', 'underline'];
+        var commands = ['bold', 'italic', 'underline'];
 
         for (var idx = 0, len = commands.length; idx < len; idx++) {
             this[commands[idx]] = (function (sCmd) {

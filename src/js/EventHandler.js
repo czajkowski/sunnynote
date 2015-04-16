@@ -87,12 +87,7 @@ define([
 
                 var eventName = keyMap[keys.join('+')];
                 if (eventName) {
-                    if ($.sunnynote.pluginEvents[eventName]) {
-                        var plugin = $.sunnynote.pluginEvents[eventName];
-                        if ($.isFunction(plugin)) {
-                            plugin(event, modules.editor, layoutInfo);
-                        }
-                    } else if (modules.editor[eventName]) {
+                    if (modules.editor[eventName]) {
                         modules.editor[eventName]($editable, $editor.data('options'));
                         event.preventDefault();
                     }
@@ -249,12 +244,6 @@ define([
             // fire init event
             bindCustomEvent($holder, 'init')();
 
-            // fire plugin init event
-            for (var i = 0, len = $.sunnynote.plugins.length; i < len; i++) {
-                if ($.isFunction($.sunnynote.plugins[i].init)) {
-                    $.sunnynote.plugins[i].init(layoutInfo);
-                }
-            }
         };
 
         this.detach = function (layoutInfo) {

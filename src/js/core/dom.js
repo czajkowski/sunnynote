@@ -29,18 +29,6 @@ define([
         };
 
         /**
-         * @method isControlSizing
-         *
-         * returns whether node is `note-control-sizing` or not.
-         *
-         * @param {Node} node
-         * @return {Boolean}
-         */
-        var isControlSizing = function (node) {
-            return node && $(node).hasClass('note-control-sizing');
-        };
-
-        /**
          * @method  buildLayoutInfo
          *
          * build layoutInfo from $editor(.note-editor)
@@ -59,78 +47,20 @@ define([
         var buildLayoutInfo = function ($editor) {
             var makeFinder;
 
-            // air mode
-            if ($editor.hasClass('note-air-editor')) {
-                var id = list.last($editor.attr('id').split('-'));
-                makeFinder = function (sIdPrefix) {
-                    return function () {
-                        return $(sIdPrefix + id);
-                    };
+            makeFinder = function (sClassName) {
+                return function () {
+                    return $editor.find(sClassName);
                 };
-
-                return {
-                    editor: function () {
-                        return $editor;
-                    },
-                    holder: function () {
-                        return $editor.data('holder');
-                    },
-                    editable: function () {
-                        return $editor;
-                    },
-                    popover: makeFinder('#note-popover-'),
-                    handle: makeFinder('#note-handle-'),
-                    dialog: makeFinder('#note-dialog-')
-                };
-
-                // frame mode
-            } else {
-                makeFinder = function (sClassName) {
-                    return function () {
-                        return $editor.find(sClassName);
-                    };
-                };
-                return {
-                    editor: function () {
-                        return $editor;
-                    },
-                    holder: function () {
-                        return $editor.data('holder');
-                    },
-                    dropzone: makeFinder('.note-dropzone'),
-                    toolbar: makeFinder('.note-toolbar'),
-                    editable: makeFinder('.note-editable'),
-                    codable: makeFinder('.note-codable'),
-                    statusbar: makeFinder('.note-statusbar'),
-                    popover: makeFinder('.note-popover'),
-                    handle: makeFinder('.note-handle'),
-                    dialog: makeFinder('.note-dialog')
-                };
-            }
-        };
-
-        /**
-         * returns makeLayoutInfo from editor's descendant node.
-         *
-         * @private
-         * @param {Node} descendant
-         * @return {Object}
-         */
-        var makeLayoutInfo = function (descendant) {
-            var $target = $(descendant).closest('.note-editor, .note-air-editor, .note-air-layout');
-
-            if (!$target.length) {
-                return null;
-            }
-
-            var $editor;
-            if ($target.is('.note-editor, .note-air-editor')) {
-                $editor = $target;
-            } else {
-                $editor = $('#note-editor-' + list.last($target.attr('id').split('-')));
-            }
-
-            return buildLayoutInfo($editor);
+            };
+            return {
+                editor: function () {
+                    return $editor;
+                },
+                holder: function () {
+                    return $editor.data('holder');
+                },
+                editable: makeFinder('.note-editable')
+            };
         };
 
         /**
@@ -177,37 +107,14 @@ define([
             return node && /^DIV|^P|^LI|^H[1-7]/.test(node.nodeName.toUpperCase());
         };
 
-        var isLi = makePredByNodeName('LI');
-
-        var isPurePara = function (node) {
-            return isPara(node) && !isLi(node);
-        };
-
-        var isTable = makePredByNodeName('TABLE');
-
         var isInline = function (node) {
             return !isBodyContainer(node) &&
-                !isList(node) &&
-                !isPara(node) &&
-                !isTable(node) &&
-                !isBlockquote(node);
+                !isPara(node);
         };
-
-        var isList = function (node) {
-            return node && /^UL|^OL/.test(node.nodeName.toUpperCase());
-        };
-
-        var isCell = function (node) {
-            return node && /^TD|^TH/.test(node.nodeName.toUpperCase());
-        };
-
-        var isBlockquote = makePredByNodeName('BLOCKQUOTE');
 
         var isBodyContainer = function (node) {
-            return isCell(node) || isBlockquote(node) || isEditable(node);
+            return isEditable(node);
         };
-
-        var isAnchor = makePredByNodeName('A');
 
         var isParaInline = function (node) {
             return isInline(node) && !!ancestor(node, isPara);
@@ -1009,25 +916,16 @@ define([
             emptyPara: '<p>' + blankHTML + '</p>',
             makePredByNodeName: makePredByNodeName,
             isEditable: isEditable,
-            isControlSizing: isControlSizing,
             buildLayoutInfo: buildLayoutInfo,
-            makeLayoutInfo: makeLayoutInfo,
             isText: isText,
             isVoid: isVoid,
             isPara: isPara,
-            isPurePara: isPurePara,
             isInline: isInline,
             isBodyInline: isBodyInline,
             isBody: isBody,
             isParaInline: isParaInline,
-            isList: isList,
-            isTable: isTable,
-            isCell: isCell,
-            isBlockquote: isBlockquote,
             isBodyContainer: isBodyContainer,
-            isAnchor: isAnchor,
             isDiv: makePredByNodeName('DIV'),
-            isLi: isLi,
             isBR: makePredByNodeName('BR'),
             isSpan: makePredByNodeName('SPAN'),
             isB: makePredByNodeName('B'),
@@ -1037,7 +935,6 @@ define([
             isImg: makePredByNodeName('IMG'),
             isTextarea: isTextarea,
             isEmpty: isEmpty,
-            isEmptyAnchor: func.and(isAnchor, isEmpty),
             isClosestSibling: isClosestSibling,
             withClosestSiblings: withClosestSiblings,
             nodeLength: nodeLength,

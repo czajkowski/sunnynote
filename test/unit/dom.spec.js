@@ -19,9 +19,9 @@ define(['jquery', 'sunnynote/core/dom', 'sunnynote/core/func'], function ($, dom
             equal(dom.ancestor(txtB, dom.isU), null, 'find ancestor U: null');
 
             // keep boundary
-            $cont = $('<ul><li><div class="note-editable"><b>b</b></div></li></ul>'); //b
+            $cont = $('<p><div class="note-editable"><b>b</b></div></p>'); //b
             txtB = $cont.find('b')[0].firstChild;
-            equal(dom.ancestor(txtB, dom.isLi), null, 'find paragraph ancestor outside note-editable: null');
+            equal(dom.ancestor(txtB, dom.isPara), null, 'find paragraph ancestor outside note-editable: null');
         });
 
         test('dom.listAncestor', function () {

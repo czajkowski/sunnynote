@@ -5,7 +5,7 @@
  * Copyright 2013-2015 Piotr Czajkowski. and other contributors
  * sunnynote may be freely distributed under the MIT license.
  *
- * Date: 2015-04-16T10:11Z
+ * Date: 2015-04-16T13:40Z
  */
 (function (factory) {
         /* global define */
@@ -85,29 +85,6 @@
     var isSupportAmd = typeof define === 'function' && define.amd;
 
     /**
-     * returns whether font is installed or not.
-     *
-     * @param {String} fontName
-     * @return {Boolean}
-     */
-    var isFontInstalled = function (fontName) {
-        var testFontName = fontName === 'Comic Sans MS' ? 'Courier New' : 'Comic Sans MS';
-        var $tester = $('<div>').css({
-            position: 'absolute',
-            left: '-9999px',
-            top: '-9999px',
-            fontSize: '200px'
-        }).text('mmmmmmmmmwwwwwww').appendTo(document.body);
-
-        var originalWidth = $tester.css('fontFamily', testFontName).width();
-        var width = $tester.css('fontFamily', fontName + ',' + testFontName).width();
-
-        $tester.remove();
-
-        return originalWidth !== width;
-    };
-
-    /**
      * @class core.agent
      *
      * Object which check platform and agent
@@ -125,8 +102,6 @@
         /** @property {String} jqueryVersion current jQuery version string  */
         jqueryVersion: parseFloat($.fn.jquery),
         isSupportAmd: isSupportAmd,
-        hasCodeMirror: isSupportAmd ? require.specified('CodeMirror') : !!window.CodeMirror,
-        isFontInstalled: isFontInstalled,
         isW3CRangeSupport: !!document.createRange
     };
 
@@ -476,18 +451,6 @@
         };
 
         /**
-         * @method isControlSizing
-         *
-         * returns whether node is `note-control-sizing` or not.
-         *
-         * @param {Node} node
-         * @return {Boolean}
-         */
-        var isControlSizing = function (node) {
-            return node && $(node).hasClass('note-control-sizing');
-        };
-
-        /**
          * @method  buildLayoutInfo
          *
          * build layoutInfo from $editor(.note-editor)
@@ -506,78 +469,20 @@
         var buildLayoutInfo = function ($editor) {
             var makeFinder;
 
-            // air mode
-            if ($editor.hasClass('note-air-editor')) {
-                var id = list.last($editor.attr('id').split('-'));
-                makeFinder = function (sIdPrefix) {
-                    return function () {
-                        return $(sIdPrefix + id);
-                    };
+            makeFinder = function (sClassName) {
+                return function () {
+                    return $editor.find(sClassName);
                 };
-
-                return {
-                    editor: function () {
-                        return $editor;
-                    },
-                    holder: function () {
-                        return $editor.data('holder');
-                    },
-                    editable: function () {
-                        return $editor;
-                    },
-                    popover: makeFinder('#note-popover-'),
-                    handle: makeFinder('#note-handle-'),
-                    dialog: makeFinder('#note-dialog-')
-                };
-
-                // frame mode
-            } else {
-                makeFinder = function (sClassName) {
-                    return function () {
-                        return $editor.find(sClassName);
-                    };
-                };
-                return {
-                    editor: function () {
-                        return $editor;
-                    },
-                    holder: function () {
-                        return $editor.data('holder');
-                    },
-                    dropzone: makeFinder('.note-dropzone'),
-                    toolbar: makeFinder('.note-toolbar'),
-                    editable: makeFinder('.note-editable'),
-                    codable: makeFinder('.note-codable'),
-                    statusbar: makeFinder('.note-statusbar'),
-                    popover: makeFinder('.note-popover'),
-                    handle: makeFinder('.note-handle'),
-                    dialog: makeFinder('.note-dialog')
-                };
-            }
-        };
-
-        /**
-         * returns makeLayoutInfo from editor's descendant node.
-         *
-         * @private
-         * @param {Node} descendant
-         * @return {Object}
-         */
-        var makeLayoutInfo = function (descendant) {
-            var $target = $(descendant).closest('.note-editor, .note-air-editor, .note-air-layout');
-
-            if (!$target.length) {
-                return null;
-            }
-
-            var $editor;
-            if ($target.is('.note-editor, .note-air-editor')) {
-                $editor = $target;
-            } else {
-                $editor = $('#note-editor-' + list.last($target.attr('id').split('-')));
-            }
-
-            return buildLayoutInfo($editor);
+            };
+            return {
+                editor: function () {
+                    return $editor;
+                },
+                holder: function () {
+                    return $editor.data('holder');
+                },
+                editable: makeFinder('.note-editable')
+            };
         };
 
         /**
@@ -624,37 +529,14 @@
             return node && /^DIV|^P|^LI|^H[1-7]/.test(node.nodeName.toUpperCase());
         };
 
-        var isLi = makePredByNodeName('LI');
-
-        var isPurePara = function (node) {
-            return isPara(node) && !isLi(node);
-        };
-
-        var isTable = makePredByNodeName('TABLE');
-
         var isInline = function (node) {
             return !isBodyContainer(node) &&
-                !isList(node) &&
-                !isPara(node) &&
-                !isTable(node) &&
-                !isBlockquote(node);
+                !isPara(node);
         };
-
-        var isList = function (node) {
-            return node && /^UL|^OL/.test(node.nodeName.toUpperCase());
-        };
-
-        var isCell = function (node) {
-            return node && /^TD|^TH/.test(node.nodeName.toUpperCase());
-        };
-
-        var isBlockquote = makePredByNodeName('BLOCKQUOTE');
 
         var isBodyContainer = function (node) {
-            return isCell(node) || isBlockquote(node) || isEditable(node);
+            return isEditable(node);
         };
-
-        var isAnchor = makePredByNodeName('A');
 
         var isParaInline = function (node) {
             return isInline(node) && !!ancestor(node, isPara);
@@ -1456,25 +1338,16 @@
             emptyPara: '<p>' + blankHTML + '</p>',
             makePredByNodeName: makePredByNodeName,
             isEditable: isEditable,
-            isControlSizing: isControlSizing,
             buildLayoutInfo: buildLayoutInfo,
-            makeLayoutInfo: makeLayoutInfo,
             isText: isText,
             isVoid: isVoid,
             isPara: isPara,
-            isPurePara: isPurePara,
             isInline: isInline,
             isBodyInline: isBodyInline,
             isBody: isBody,
             isParaInline: isParaInline,
-            isList: isList,
-            isTable: isTable,
-            isCell: isCell,
-            isBlockquote: isBlockquote,
             isBodyContainer: isBodyContainer,
-            isAnchor: isAnchor,
             isDiv: makePredByNodeName('DIV'),
-            isLi: isLi,
             isBR: makePredByNodeName('BR'),
             isSpan: makePredByNodeName('SPAN'),
             isB: makePredByNodeName('B'),
@@ -1484,7 +1357,6 @@
             isImg: makePredByNodeName('IMG'),
             isTextarea: isTextarea,
             isEmpty: isEmpty,
-            isEmptyAnchor: func.and(isAnchor, isEmpty),
             isClosestSibling: isClosestSibling,
             withClosestSiblings: withClosestSiblings,
             nodeLength: nodeLength,
@@ -1928,12 +1800,6 @@
 
             // isOnEditable: judge whether range is on editable or not
             this.isOnEditable = makeIsOn(dom.isEditable);
-            // isOnList: judge whether range is on list node or not
-            this.isOnList = makeIsOn(dom.isList);
-            // isOnAnchor: judge whether range is on anchor node or not
-            this.isOnAnchor = makeIsOn(dom.isAnchor);
-            // isOnAnchor: judge whether range is on cell node or not
-            this.isOnCell = makeIsOn(dom.isCell);
 
             /**
              * @param {Function} pred
@@ -2227,15 +2093,6 @@
          * @property {String/Number} options.focus
          * @property {Number} options.tabsize
          * @property {Boolean} options.styleWithSpan
-         * @property {Object} options.codemirror
-         * @property {Object} [options.codemirror.mode='text/html']
-         * @property {Object} [options.codemirror.htmlMode=true]
-         * @property {Object} [options.codemirror.lineNumbers=true]
-         * @property {String} [options.lang=en-US] language 'en-US', 'ko-KR', ...
-         * @property {String} [options.direction=null] text direction, ex) 'rtl'
-         * @property {Array} [options.toolbar]
-         * @property {Boolean} [options.airMode=false]
-         * @property {Array} [options.airPopover]
          * @property {Fucntion} [options.onInit] initialize
          * @property {Fucntion} [options.onsubmit]
          */
@@ -2271,6 +2128,7 @@
                     'CTRL+Z': 'undo',
                     'CTRL+Y': 'redo',
                     'CTRL+B': 'bold',
+                    'CTRL+I': 'italic',
                     'CTRL+U': 'underline'
                 },
 
@@ -2279,6 +2137,7 @@
                     'CMD+Z': 'undo',
                     'CMD+SHIFT+Z': 'redo',
                     'CMD+B': 'bold',
+                    'CMD+I': 'italic',
                     'CMD+U': 'underline'
                 }
             }
@@ -2610,14 +2469,6 @@
             // on paragraph: split paragraph
             if (splitRoot) {
                 nextPara = dom.splitTree(splitRoot, rng.getStartPoint());
-
-                var emptyAnchors = dom.listDescendant(splitRoot, dom.isEmptyAnchor);
-                emptyAnchors = emptyAnchors.concat(dom.listDescendant(nextPara, dom.isEmptyAnchor));
-
-                $.each(emptyAnchors, function (idx, anchor) {
-                    dom.remove(anchor);
-                });
-                // no paragraph: insert empty paragraph
             } else {
                 var next = rng.sc.childNodes[rng.so];
                 nextPara = $(dom.emptyPara)[0];
@@ -2789,7 +2640,7 @@
 
         /* jshint ignore:start */
         // native commands(with execCommand), generate function for execCommand
-        var commands = ['bold', 'underline'];
+        var commands = ['bold', 'italic', 'underline'];
 
         for (var idx = 0, len = commands.length; idx < len; idx++) {
             this[commands[idx]] = (function (sCmd) {
@@ -2956,12 +2807,7 @@
 
                 var eventName = keyMap[keys.join('+')];
                 if (eventName) {
-                    if ($.sunnynote.pluginEvents[eventName]) {
-                        var plugin = $.sunnynote.pluginEvents[eventName];
-                        if ($.isFunction(plugin)) {
-                            plugin(event, modules.editor, layoutInfo);
-                        }
-                    } else if (modules.editor[eventName]) {
+                    if (modules.editor[eventName]) {
                         modules.editor[eventName]($editable, $editor.data('options'));
                         event.preventDefault();
                     }
@@ -3118,12 +2964,6 @@
             // fire init event
             bindCustomEvent($holder, 'init')();
 
-            // fire plugin init event
-            for (var i = 0, len = $.sunnynote.plugins.length; i < len; i++) {
-                if ($.isFunction($.sunnynote.plugins[i].init)) {
-                    $.sunnynote.plugins[i].init(layoutInfo);
-                }
-            }
         };
 
         this.detach = function (layoutInfo) {
@@ -3183,9 +3023,7 @@
         };
 
         this.noteEditorFromHolder = function ($holder) {
-            if ($holder.hasClass('note-air-editor')) {
-                return $holder;
-            } else if ($holder.next().hasClass('note-editor')) {
+            if ($holder.next().hasClass('note-editor')) {
                 return $holder.next();
             } else {
                 return $();
@@ -3229,23 +3067,13 @@
          *
          * @param {jQuery} $holder - placeholder
          * @param {Object} layoutInfo
-         * @param {Object} options
          *
          */
-        this.removeLayout = function ($holder, layoutInfo, options) {
-            if (options.airMode) {
-                $holder.removeClass('note-air-editor note-editable')
-                    .removeAttr('id contentEditable');
+        this.removeLayout = function ($holder, layoutInfo) {
+            $holder.html(layoutInfo.editable().html());
 
-                layoutInfo.popover().remove();
-                layoutInfo.handle().remove();
-                layoutInfo.dialog().remove();
-            } else {
-                $holder.html(layoutInfo.editable().html());
-
-                layoutInfo.editor().remove();
-                $holder.show();
-            }
+            layoutInfo.editor().remove();
+            $holder.show();
         };
 
     };
@@ -3287,103 +3115,9 @@
             agent: agent,
             dom: dom,
             range: range
-        },
-        /** 
-         * @property {Object}
-         * pluginEvents event list for plugins
-         * event has name and callback function.
-         *
-         * ```
-         * $.sunnynote.addPlugin({
-         *     events : {
-         *          'hello' : function(layoutInfo, value, $target) {
-         *              console.log('event name is hello, value is ' + value );
-         *          }
-         *     }
-         * })
-         * ```
-         *
-         * * event name is data-event property.
-         * * layoutInfo is a sunnynote layout information.
-         * * value is data-value property.
-         */
-        pluginEvents: {},
-
-        plugins: []
+        }
     });
 
-    /**
-     * @method addPlugin
-     *
-     * add Plugin in Summernote
-     *
-     * Summernote can make a own plugin.
-     *
-     * ### Define plugin
-     * ```
-     * // get template function
-     * var tmpl = $.sunnynote.renderer.getTemplate();
-     *
-     * // add a button
-     * $.sunnynote.addPlugin({
-     *     buttons : {
-     *        // "hello"  is button's namespace.
-     *        "hello" : function(lang, options) {
-     *            // make icon button by template function
-     *            return tmpl.iconButton('fa fa-header', {
-     *                // callback function name when button clicked
-     *                event : 'hello',
-     *                // set data-value property
-     *                value : 'hello',
-     *                hide : true
-     *            });
-     *        }
-     *
-     *     },
-     *
-     *     events : {
-     *        "hello" : function(layoutInfo, value) {
-     *            // here is event code
-     *        }
-     *     }
-     * });
-     * ```
-     * ### Use a plugin in toolbar
-     *
-     * ```
-     *    $("#editor").sunnynote({
-     *    ...
-     *    toolbar : [
-     *        // display hello plugin in toolbar
-     *        ['group', [ 'hello' ]]
-     *    ]
-     *    ...
-     *    });
-     * ```
-     *
-     *
-     * @param {Object} plugin
-     * @param {Object} [plugin.buttons] define plugin button. for detail, see to Renderer.addButtonInfo
-     * @param {Object} [plugin.dialogs] define plugin dialog. for detail, see to Renderer.addDialogInfo
-     * @param {Object} [plugin.events] add event in $.sunnynote.pluginEvents
-     * @param {Object} [plugin.langs] update $.sunnynote.lang
-     * @param {Object} [plugin.options] update $.sunnynote.options
-     */
-    $.sunnynote.addPlugin = function (plugin) {
-
-        // save plugin list
-        $.sunnynote.plugins.push(plugin);
-
-        if (plugin.events) {
-            $.each(plugin.events, function (name, event) {
-                $.sunnynote.pluginEvents[name] = event;
-            });
-        }
-
-        if (plugin.options) {
-            $.extend($.sunnynote.options, plugin.options);
-        }
-    };
 
     /*
      * extend $.fn
@@ -3486,10 +3220,7 @@
                 var $editable = layoutInfo && layoutInfo.editable();
 
                 if ($editable && $editable.length) {
-                    var isCodeview = eventHandler.invoke('codeview.isActivated', layoutInfo);
-                    eventHandler.invoke('codeview.sync', layoutInfo);
-                    return isCodeview ? layoutInfo.codable().val() :
-                        layoutInfo.editable().html();
+                    return layoutInfo.editable().html();
                 }
                 return dom.isTextarea($holder[0]) ? $holder.val() : $holder.html();
             }
@@ -3526,7 +3257,7 @@
                 var options = info.editor().data('options');
 
                 eventHandler.detach(info, options);
-                renderer.removeLayout($holder, info, options);
+                renderer.removeLayout($holder, info);
             });
 
             return this;
