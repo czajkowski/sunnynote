@@ -11,7 +11,7 @@ $(document).ready(function() {
         styleWithSpan : false,
         placeholder: 'Type your message here...',
         onChange: function(contents, $editable) {
-            $preview.text($editor.code());
+            $preview.text(contents)
             hljs.highlightBlock($preview.get(0));
         }
     });

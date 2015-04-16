@@ -122,6 +122,15 @@ define([
             styleInfo['font-superscript'] = document.queryCommandState('superscript') ? 'superscript' : 'normal';
             styleInfo['font-subscript'] = document.queryCommandState('subscript') ? 'subscript' : 'normal';
 
+            // list-style-type to list-style(unordered, ordered)
+            if (!rng.isOnList()) {
+                styleInfo['list-style'] = 'none';
+            } else {
+                var aOrderedType = ['circle', 'disc', 'disc-leading-zero', 'square'];
+                var isUnordered = $.inArray(styleInfo['list-style-type'], aOrderedType) > -1;
+                styleInfo['list-style'] = isUnordered ? 'unordered' : 'ordered';
+            }
+
             var para = dom.ancestor(rng.sc, dom.isPara);
             if (para && para.style['line-height']) {
                 styleInfo['line-height'] = para.style.lineHeight;
@@ -130,9 +139,8 @@ define([
                 styleInfo['line-height'] = lineHeight.toFixed(1);
             }
 
-            // TODO
-            target = target;
-
+            styleInfo.image = dom.isImg(target) && target;
+            styleInfo.anchor = rng.isOnAnchor() && dom.ancestor(rng.sc, dom.isAnchor);
             styleInfo.ancestors = dom.listAncestor(rng.sc, dom.isEditable);
             styleInfo.range = rng;
 

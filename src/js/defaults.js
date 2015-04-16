@@ -20,6 +20,15 @@ define('sunnynote/defaults', function () {
          * @property {String/Number} options.focus
          * @property {Number} options.tabsize
          * @property {Boolean} options.styleWithSpan
+         * @property {Object} options.codemirror
+         * @property {Object} [options.codemirror.mode='text/html']
+         * @property {Object} [options.codemirror.htmlMode=true]
+         * @property {Object} [options.codemirror.lineNumbers=true]
+         * @property {String} [options.lang=en-US] language 'en-US', 'ko-KR', ...
+         * @property {String} [options.direction=null] text direction, ex) 'rtl'
+         * @property {Array} [options.toolbar]
+         * @property {Boolean} [options.airMode=false]
+         * @property {Array} [options.airPopover]
          * @property {Fucntion} [options.onInit] initialize
          * @property {Fucntion} [options.onsubmit]
          */
@@ -55,7 +64,6 @@ define('sunnynote/defaults', function () {
                     'CTRL+Z': 'undo',
                     'CTRL+Y': 'redo',
                     'CTRL+B': 'bold',
-                    'CTRL+I': 'italic',
                     'CTRL+U': 'underline'
                 },
 
@@ -64,7 +72,6 @@ define('sunnynote/defaults', function () {
                     'CMD+Z': 'undo',
                     'CMD+SHIFT+Z': 'redo',
                     'CMD+B': 'bold',
-                    'CTRL+I': 'italic',
                     'CMD+U': 'underline'
                 }
             }
