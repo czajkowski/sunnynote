@@ -49,7 +49,7 @@ define('sunnynote/defaults', function () {
             onkeydown: null, // keydown
             onsubmit: null,
 
-            onStyleChange : null,
+            onStyleChange: null, // event fired when text styles on cursor position change
 
             keyMap: {
                 pc: {

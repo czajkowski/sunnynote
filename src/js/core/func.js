@@ -48,6 +48,21 @@ define('sunnynote/core/func', function () {
             return a;
         };
 
+        var subset = function (sup, sub) {
+            var k;
+            if (!sup || !sub) { return false; }
+            for (k in sup) {
+                if (sup.hasOwnProperty(k) && sup[k] !== sub[k]) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        var same = function (a, b) {
+            return subset(a, b) && subset(b, a);
+        };
+
         var idCounter = 0;
 
         /**
@@ -109,7 +124,9 @@ define('sunnynote/core/func', function () {
             and: and,
             uniqueId: uniqueId,
             rect2bnd: rect2bnd,
-            invertObject: invertObject
+            invertObject: invertObject,
+            subset : subset,
+            same : same
         };
     })();
 

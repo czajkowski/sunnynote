@@ -5,7 +5,7 @@
  * Copyright 2013-2015 Piotr Czajkowski. and other contributors
  * sunnynote may be freely distributed under the MIT license.
  *
- * Date: 2015-04-16T14:25Z
+ * Date: 2015-04-27T14:21Z
  */
 (function (factory) {
         /* global define */
@@ -154,6 +154,21 @@
             return a;
         };
 
+        var subset = function (sup, sub) {
+            var k;
+            if (!sup || !sub) { return false; }
+            for (k in sup) {
+                if (sup.hasOwnProperty(k) && sup[k] !== sub[k]) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        var same = function (a, b) {
+            return subset(a, b) && subset(b, a);
+        };
+
         var idCounter = 0;
 
         /**
@@ -215,7 +230,9 @@
             and: and,
             uniqueId: uniqueId,
             rect2bnd: rect2bnd,
-            invertObject: invertObject
+            invertObject: invertObject,
+            subset : subset,
+            same : same
         };
     })();
 
@@ -2122,7 +2139,7 @@
             onkeydown: null, // keydown
             onsubmit: null,
 
-            onStyleChange : null,
+            onStyleChange: null, // event fired when text styles on cursor position change
 
             keyMap: {
                 pc: {
@@ -2290,138 +2307,19 @@
      *
      */
     var Style = function () {
-        /**
-         * @method jQueryCSS
-         *
-         * passing an array of style properties to .css()
-         * will result in an object of property-value pairs.
-         * (compability with version < 1.9)
-         *
-         * @private
-         * @param  {jQuery} $obj
-         * @param  {Array} propertyNames - An array of one or more CSS properties.
-         * @return {Object}
-         */
-        var jQueryCSS = function ($obj, propertyNames) {
-            if (agent.jqueryVersion < 1.9) {
-                var result = {};
-                $.each(propertyNames, function (idx, propertyName) {
-                    result[propertyName] = $obj.css(propertyName);
-                });
-                return result;
-            }
-            return $obj.css.call($obj, propertyNames);
-        };
-
-        /**
-         * paragraph level style
-         *
-         * @param {WrappedRange} rng
-         * @param {Object} styleInfo
-         */
-        this.stylePara = function (rng, styleInfo) {
-            $.each(rng.nodes(dom.isPara, {
-                includeAncestor: true
-            }), function (idx, para) {
-                $(para).css(styleInfo);
-            });
-        };
-
-        /**
-         * insert and returns styleNodes on range.
-         *
-         * @param {WrappedRange} rng
-         * @param {Object} [options] - options for styleNodes
-         * @param {String} [options.nodeName] - default: `SPAN`
-         * @param {Boolean} [options.expandClosestSibling] - default: `false`
-         * @param {Boolean} [options.onlyPartialContains] - default: `false`
-         * @return {Node[]}
-         */
-        this.styleNodes = function (rng, options) {
-            rng = rng.splitText();
-
-            var nodeName = options && options.nodeName || 'SPAN';
-            var expandClosestSibling = !!(options && options.expandClosestSibling);
-            var onlyPartialContains = !!(options && options.onlyPartialContains);
-
-            if (rng.isCollapsed()) {
-                return rng.insertNode(dom.create(nodeName));
-            }
-
-            var pred = dom.makePredByNodeName(nodeName);
-            var nodes = $.map(rng.nodes(dom.isText, {
-                fullyContains: true
-            }), function (text) {
-                return dom.singleChildAncestor(text, pred) || dom.wrap(text, nodeName);
-            });
-
-            if (expandClosestSibling) {
-                if (onlyPartialContains) {
-                    var nodesInRange = rng.nodes();
-                    // compose with partial contains predication
-                    pred = func.and(pred, function (node) {
-                        return list.contains(nodesInRange, node);
-                    });
-                }
-
-                return $.map(nodes, function (node) {
-                    var siblings = dom.withClosestSiblings(node, pred);
-                    var head = list.head(siblings);
-                    var tails = list.tail(siblings);
-                    $.each(tails, function (idx, elem) {
-                        dom.appendChildNodes(head, elem.childNodes);
-                        dom.remove(elem);
-                    });
-                    return list.head(siblings);
-                });
-            } else {
-                return nodes;
-            }
-        };
 
         /**
          * get current style on cursor
          *
-         * @param {WrappedRange} rng
-         * @param {Node} target - target element on event
          * @return {Object} - object contains style properties.
          */
-        this.current = function (rng, target) {
-            var $cont = $(dom.isText(rng.sc) ? rng.sc.parentNode : rng.sc);
-            var properties = ['font-family', 'font-size', 'text-align', 'list-style-type', 'line-height'];
-            var styleInfo = jQueryCSS($cont, properties) || {};
-
-            styleInfo['font-size'] = parseInt(styleInfo['font-size'], 10);
+        this.current = function () {
+            var styleInfo = {};
 
             // document.queryCommandState for toggle state
             styleInfo['font-bold'] = document.queryCommandState('bold') ? 'bold' : 'normal';
             styleInfo['font-italic'] = document.queryCommandState('italic') ? 'italic' : 'normal';
             styleInfo['font-underline'] = document.queryCommandState('underline') ? 'underline' : 'normal';
-            styleInfo['font-strikethrough'] = document.queryCommandState('strikeThrough') ? 'strikethrough' : 'normal';
-            styleInfo['font-superscript'] = document.queryCommandState('superscript') ? 'superscript' : 'normal';
-            styleInfo['font-subscript'] = document.queryCommandState('subscript') ? 'subscript' : 'normal';
-
-            // list-style-type to list-style(unordered, ordered)
-            if (!rng.isOnList()) {
-                styleInfo['list-style'] = 'none';
-            } else {
-                var aOrderedType = ['circle', 'disc', 'disc-leading-zero', 'square'];
-                var isUnordered = $.inArray(styleInfo['list-style-type'], aOrderedType) > -1;
-                styleInfo['list-style'] = isUnordered ? 'unordered' : 'ordered';
-            }
-
-            var para = dom.ancestor(rng.sc, dom.isPara);
-            if (para && para.style['line-height']) {
-                styleInfo['line-height'] = para.style.lineHeight;
-            } else {
-                var lineHeight = parseInt(styleInfo['line-height'], 10) / parseInt(styleInfo['font-size'], 10);
-                styleInfo['line-height'] = lineHeight.toFixed(1);
-            }
-
-            styleInfo.image = dom.isImg(target) && target;
-            styleInfo.anchor = rng.isOnAnchor() && dom.ancestor(rng.sc, dom.isAnchor);
-            styleInfo.ancestors = dom.listAncestor(rng.sc, dom.isEditable);
-            styleInfo.range = rng;
 
             return styleInfo;
         };
@@ -2579,9 +2477,9 @@
          * @param {Node} target
          * @return {Boolean} false if range is no
          */
-        this.currentStyle = function (target) {
+        this.currentStyle = function () {
             var rng = range.create();
-            return rng ? rng.isOnEditable() && style.current(rng, target) : false;
+            return rng ? rng.isOnEditable() && style.current() : false;
         };
 
         var triggerOnBeforeChange = this.triggerOnBeforeChange = function ($editable) {
@@ -2834,7 +2732,6 @@
          * @param {function(event)} [options.onkeyup]
          * @param {function(event)} [options.onkeydown]
          * @param {function(event)} [options.onpaste]
-         * @param {function(event)} [options.onToolBarclick]
          * @param {function(event)} [options.onChange]
          */
         this.attach = function (layoutInfo, options) {
@@ -2898,6 +2795,23 @@
                 } else {
                     layoutInfo.editable().on('input', hChange);
                 }
+            }
+
+            // onStyleChange
+            if (options.onStyleChange) {
+                var lastStyleInfo = {};
+
+                layoutInfo.editable().on('keyup mouseup', function (e) {
+                    // delay for range after mouseup
+                    setTimeout(function () {
+                        var styleInfo = modules.editor.currentStyle(e.target);
+                        if (!func.same(lastStyleInfo, styleInfo)) {
+                            lastStyleInfo = styleInfo;
+                            options.onStyleChange(styleInfo, layoutInfo.editable());
+                        }
+                    }, 0);
+                });
+
             }
 
             // All editor status will be saved on editable with jquery's data
@@ -2965,7 +2879,6 @@
 
             // fire init event
             bindCustomEvent($holder, 'init')();
-
         };
 
         this.detach = function (layoutInfo) {

@@ -102,7 +102,7 @@ define([
          */
         this.currentStyle = function () {
             var rng = range.create();
-            return rng ? rng.isOnEditable() && style.current(rng) : false;
+            return rng ? rng.isOnEditable() && style.current() : false;
         };
 
         var triggerOnBeforeChange = this.triggerOnBeforeChange = function ($editable) {

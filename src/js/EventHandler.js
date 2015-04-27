@@ -3,9 +3,10 @@ define([
     'sunnynote/core/dom',
     'sunnynote/core/key',
     'sunnynote/core/list',
+    'sunnynote/core/func',
     'sunnynote/editing/History',
     'sunnynote/module/Editor'
-], function (agent, dom, key, list, History, Editor) {
+], function (agent, dom, key, list, func, History, Editor) {
 
     /**
      * @class EventHandler
@@ -112,7 +113,6 @@ define([
          * @param {function(event)} [options.onkeyup]
          * @param {function(event)} [options.onkeydown]
          * @param {function(event)} [options.onpaste]
-         * @param {function(event)} [options.onToolBarclick]
          * @param {function(event)} [options.onChange]
          */
         this.attach = function (layoutInfo, options) {
@@ -120,8 +120,6 @@ define([
             if (options.shortcuts) {
                 this.bindKeyMap(layoutInfo, options.keyMap[agent.isMac ? 'mac' : 'pc']);
             }
-
-            //layoutInfo.editable().on('keyup mouseup', hToolbarAndPopoverUpdate);
 
             // save options on editor
             layoutInfo.editor().data('options', options);
@@ -178,6 +176,23 @@ define([
                 } else {
                     layoutInfo.editable().on('input', hChange);
                 }
+            }
+
+            // onStyleChange
+            if (options.onStyleChange) {
+                var lastStyleInfo = {};
+
+                layoutInfo.editable().on('keyup mouseup', function (e) {
+                    // delay for range after mouseup
+                    setTimeout(function () {
+                        var styleInfo = modules.editor.currentStyle(e.target);
+                        if (!func.same(lastStyleInfo, styleInfo)) {
+                            lastStyleInfo = styleInfo;
+                            options.onStyleChange(styleInfo, layoutInfo.editable());
+                        }
+                    }, 0);
+                });
+
             }
 
             // All editor status will be saved on editable with jquery's data
@@ -245,7 +260,6 @@ define([
 
             // fire init event
             bindCustomEvent($holder, 'init')();
-
         };
 
         this.detach = function (layoutInfo) {

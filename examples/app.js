@@ -10,14 +10,8 @@ $(document).ready(function() {
     $editor.sunnynote({
         styleWithSpan : false,
         placeholder: 'Type your message here...',
-        onChange: function(contents, $editable) {
-            $preview.text($editor.code());
-            hljs.highlightBlock($preview.get(0));
-
-            console.log('on change');
-        },
-        onStyleChange : function (style, value, $editable) {
-            console.log('on style change', style, value);
+        onStyleChange : function (styleInfo, $editable) {
+            console.log('on style change', styleInfo);
 
         }
     });
