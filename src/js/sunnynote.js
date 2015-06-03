@@ -7,6 +7,8 @@ define([
     'sunnynote/EventHandler',
     'sunnynote/Renderer'
 ], function (agent, list, dom, range, defaults, EventHandler, Renderer) {
+    'use strict';
+
 
     // jQuery namespace for sunnynote
     /**
@@ -88,7 +90,6 @@ define([
 
                     eventHandler.attach(layoutInfo, options);
                     eventHandler.attachCustomEvent(layoutInfo, options);
-
                 }
             });
 
@@ -164,6 +165,28 @@ define([
             });
 
             return this;
+        },
+
+        applyStyle: function (styles) {
+            var type = $.type(styles);
+            var $holder = this.first();
+
+            if (type === 'string') {
+                styles = styles.split(' ');
+            }
+
+            if (!$holder.length || !styles) {
+                return;
+            }
+
+            var layoutInfo = renderer.layoutInfoFromHolder($holder);
+            var $editable = layoutInfo && layoutInfo.editable();
+
+            for (var idx = 0, len = styles.length; idx < len; idx++) {
+                eventHandler.invoke.call(eventHandler, styles[idx], $editable);
+            }
+
+            $editable.focus();
         },
 
         /**

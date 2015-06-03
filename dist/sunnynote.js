@@ -5,7 +5,7 @@
  * Copyright 2013-2015 Piotr Czajkowski. and other contributors
  * sunnynote may be freely distributed under the MIT license.
  *
- * Date: 2015-04-27T14:21Z
+ * Date: 2015-06-03T14:15Z
  */
 (function (factory) {
         /* global define */
@@ -2626,6 +2626,7 @@
         };
     };
 
+    
 
     /**
      * @class EventHandler
@@ -2801,7 +2802,7 @@
             if (options.onStyleChange) {
                 var lastStyleInfo = {};
 
-                layoutInfo.editable().on('keyup mouseup', function (e) {
+                layoutInfo.editable().on('keyup mouseup focus', function (e) {
                     // delay for range after mouseup
                     setTimeout(function () {
                         var styleInfo = modules.editor.currentStyle(e.target);
@@ -2884,7 +2885,6 @@
         this.detach = function (layoutInfo) {
             layoutInfo.holder().off();
             layoutInfo.editable().off();
-
         };
     };
 
@@ -2993,6 +2993,8 @@
 
     };
 
+    
+
 
     // jQuery namespace for sunnynote
     /**
@@ -3074,7 +3076,6 @@
 
                     eventHandler.attach(layoutInfo, options);
                     eventHandler.attachCustomEvent(layoutInfo, options);
-
                 }
             });
 
@@ -3150,6 +3151,28 @@
             });
 
             return this;
+        },
+
+        applyStyle: function (styles) {
+            var type = $.type(styles);
+            var $holder = this.first();
+
+            if (type === 'string') {
+                styles = styles.split(' ');
+            }
+
+            if (!$holder.length || !styles) {
+                return;
+            }
+
+            var layoutInfo = renderer.layoutInfoFromHolder($holder);
+            var $editable = layoutInfo && layoutInfo.editable();
+
+            for (var idx = 0, len = styles.length; idx < len; idx++) {
+                eventHandler.invoke.call(eventHandler, styles[idx], $editable);
+            }
+
+            $editable.focus();
         },
 
         /**

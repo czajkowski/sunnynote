@@ -7,6 +7,7 @@ define([
     'sunnynote/editing/History',
     'sunnynote/module/Editor'
 ], function (agent, dom, key, list, func, History, Editor) {
+    'use strict';
 
     /**
      * @class EventHandler
@@ -182,7 +183,7 @@ define([
             if (options.onStyleChange) {
                 var lastStyleInfo = {};
 
-                layoutInfo.editable().on('keyup mouseup', function (e) {
+                layoutInfo.editable().on('keyup mouseup focus', function (e) {
                     // delay for range after mouseup
                     setTimeout(function () {
                         var styleInfo = modules.editor.currentStyle(e.target);
@@ -265,7 +266,6 @@ define([
         this.detach = function (layoutInfo) {
             layoutInfo.holder().off();
             layoutInfo.editable().off();
-
         };
     };
 
