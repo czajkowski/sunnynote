@@ -93,6 +93,10 @@ define([
                 }
             });
 
+            if (options.fontStyling) {
+                eventHandler.invoke('enableFontStyling');
+            }
+
             // callback on init
             if (!isExternalAPICalled && this.length && options.oninit) {
                 options.oninit();
@@ -167,7 +171,19 @@ define([
             return this;
         },
 
-        applyStyle: function (styles) {
+        enableFontStyling: function () {
+            eventHandler.invoke('enableFontStyling');
+
+            return this;
+        },
+
+        disableFontStyling: function () {
+            eventHandler.invoke('disableFontStyling');
+
+            return this;
+        },
+
+        toggleFontStyle: function (styles) {
             var type = $.type(styles);
             var $holder = this.first();
 
@@ -182,11 +198,13 @@ define([
             var layoutInfo = renderer.layoutInfoFromHolder($holder);
             var $editable = layoutInfo && layoutInfo.editable();
 
+            $editable.focus();
+
             for (var idx = 0, len = styles.length; idx < len; idx++) {
                 eventHandler.invoke.call(eventHandler, styles[idx], $editable);
             }
 
-            $editable.focus();
+            return this;
         },
 
         /**

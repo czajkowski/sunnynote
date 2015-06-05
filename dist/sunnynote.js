@@ -5,7 +5,7 @@
  * Copyright 2013-2015 Piotr Czajkowski. and other contributors
  * sunnynote may be freely distributed under the MIT license.
  *
- * Date: 2015-06-03T14:15Z
+ * Date: 2015-06-05T13:21Z
  */
 (function (factory) {
         /* global define */
@@ -2127,6 +2127,8 @@
 
             shortcuts: true, // enable keyboard shortcuts
 
+            fontStyling : true, // enable font styling
+
             // language
             direction: null, // text direction, ex) 'rtl'
 
@@ -2300,6 +2302,8 @@
         this.recordUndo();
     };
 
+    
+
     /**
      * @class editing.Style
      *
@@ -2314,14 +2318,11 @@
          * @return {Object} - object contains style properties.
          */
         this.current = function () {
-            var styleInfo = {};
-
-            // document.queryCommandState for toggle state
-            styleInfo['font-bold'] = document.queryCommandState('bold') ? 'bold' : 'normal';
-            styleInfo['font-italic'] = document.queryCommandState('italic') ? 'italic' : 'normal';
-            styleInfo['font-underline'] = document.queryCommandState('underline') ? 'underline' : 'normal';
-
-            return styleInfo;
+            return {
+                bold : document.queryCommandState('bold'),
+                italic : document.queryCommandState('italic'),
+                underline : document.queryCommandState('underline')
+            };
         };
     };
 
@@ -2383,6 +2384,8 @@
         };
 
     };
+
+    
 
     /**
      * @class editing.Editor
@@ -2542,17 +2545,30 @@
         // native commands(with execCommand), generate function for execCommand
         var commands = ['bold', 'italic', 'underline'];
 
-        for (var idx = 0, len = commands.length; idx < len; idx++) {
-            this[commands[idx]] = (function (sCmd) {
-                return function ($editable, value) {
-                    beforeCommand($editable);
+        this.enableFontStyling = function () {
+            for (var idx = 0, len = commands.length; idx < len; idx++) {
+                this[commands[idx]] = (function (sCmd) {
+                    return function ($editable) {
+                        beforeCommand($editable);
+                        document.execCommand(sCmd, false);
+                        afterCommand($editable);
+                    };
+                })(commands[idx]);
+            }
+        };
 
-                    document.execCommand(sCmd, false, value);
+        this.disableFontStyling = function () {
+            var styleInfo = this.currentStyle() || {};
+            for (var idx = 0, len = commands.length; idx < len; idx++) {
+                if (styleInfo[commands[idx]]) {
+                    // disable styling if enabled
+                    document.execCommand(commands[idx], false);
+                }
 
-                    afterCommand($editable);
-                };
-            })(commands[idx]);
-        }
+                delete this[commands[idx]];
+            }
+        };
+
         /* jshint ignore:end */
 
         /**
@@ -2614,8 +2630,6 @@
             afterCommand($editable);
         };
 
-
-
         /**
          * set focus
          *
@@ -2624,6 +2638,7 @@
         this.focus = function ($editable) {
             $editable.focus();
         };
+
     };
 
     
@@ -2806,13 +2821,12 @@
                     // delay for range after mouseup
                     setTimeout(function () {
                         var styleInfo = modules.editor.currentStyle(e.target);
-                        if (!func.same(lastStyleInfo, styleInfo)) {
+                        if (styleInfo && !func.same(lastStyleInfo, styleInfo)) {
                             lastStyleInfo = styleInfo;
                             options.onStyleChange(styleInfo, layoutInfo.editable());
                         }
                     }, 0);
                 });
-
             }
 
             // All editor status will be saved on editable with jquery's data
@@ -3079,6 +3093,10 @@
                 }
             });
 
+            if (options.fontStyling) {
+                eventHandler.invoke('enableFontStyling');
+            }
+
             // callback on init
             if (!isExternalAPICalled && this.length && options.oninit) {
                 options.oninit();
@@ -3153,7 +3171,19 @@
             return this;
         },
 
-        applyStyle: function (styles) {
+        enableFontStyling: function () {
+            eventHandler.invoke('enableFontStyling');
+
+            return this;
+        },
+
+        disableFontStyling: function () {
+            eventHandler.invoke('disableFontStyling');
+
+            return this;
+        },
+
+        toggleFontStyle: function (styles) {
             var type = $.type(styles);
             var $holder = this.first();
 
@@ -3168,11 +3198,13 @@
             var layoutInfo = renderer.layoutInfoFromHolder($holder);
             var $editable = layoutInfo && layoutInfo.editable();
 
+            $editable.focus();
+
             for (var idx = 0, len = styles.length; idx < len; idx++) {
                 eventHandler.invoke.call(eventHandler, styles[idx], $editable);
             }
 
-            $editable.focus();
+            return this;
         },
 
         /**

@@ -37,6 +37,8 @@ define('sunnynote/defaults', function () {
 
             shortcuts: true, // enable keyboard shortcuts
 
+            fontStyling : true, // enable font styling
+
             // language
             direction: null, // text direction, ex) 'rtl'
 
@@ -48,6 +50,7 @@ define('sunnynote/defaults', function () {
             onkeyup: null, // keyup
             onkeydown: null, // keydown
             onsubmit: null,
+            onpaste : null,
 
             onStyleChange: null, // event fired when text styles on cursor position change
 

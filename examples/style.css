@@ -8,13 +8,14 @@ p {
     border: 1px solid;
     display: inline-block;
     vertical-align: top;
-    margin-bottom: 20px
+    margin-bottom: 20px;
 }
 
 .note-editable {
     height: 300px;
     width: 600px;
     overflow: auto;
+    padding: 10px;
 }
 
 .preview {

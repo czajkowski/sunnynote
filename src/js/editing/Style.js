@@ -1,4 +1,6 @@
 define(function () {
+    'use strict';
+
     /**
      * @class editing.Style
      *
@@ -13,14 +15,11 @@ define(function () {
          * @return {Object} - object contains style properties.
          */
         this.current = function () {
-            var styleInfo = {};
-
-            // document.queryCommandState for toggle state
-            styleInfo['font-bold'] = document.queryCommandState('bold') ? 'bold' : 'normal';
-            styleInfo['font-italic'] = document.queryCommandState('italic') ? 'italic' : 'normal';
-            styleInfo['font-underline'] = document.queryCommandState('underline') ? 'underline' : 'normal';
-
-            return styleInfo;
+            return {
+                bold : document.queryCommandState('bold'),
+                italic : document.queryCommandState('italic'),
+                underline : document.queryCommandState('underline')
+            };
         };
     };
 

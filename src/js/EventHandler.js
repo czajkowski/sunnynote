@@ -187,13 +187,12 @@ define([
                     // delay for range after mouseup
                     setTimeout(function () {
                         var styleInfo = modules.editor.currentStyle(e.target);
-                        if (!func.same(lastStyleInfo, styleInfo)) {
+                        if (styleInfo && !func.same(lastStyleInfo, styleInfo)) {
                             lastStyleInfo = styleInfo;
                             options.onStyleChange(styleInfo, layoutInfo.editable());
                         }
                     }, 0);
                 });
-
             }
 
             // All editor status will be saved on editable with jquery's data

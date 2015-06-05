@@ -7,6 +7,8 @@ define([
     'sunnynote/editing/Style',
     'sunnynote/editing/Typing'
 ], function (agent, func, list, dom, range, Style, Typing) {
+    'use strict';
+
     /**
      * @class editing.Editor
      *
@@ -165,17 +167,30 @@ define([
         // native commands(with execCommand), generate function for execCommand
         var commands = ['bold', 'italic', 'underline'];
 
-        for (var idx = 0, len = commands.length; idx < len; idx++) {
-            this[commands[idx]] = (function (sCmd) {
-                return function ($editable, value) {
-                    beforeCommand($editable);
+        this.enableFontStyling = function () {
+            for (var idx = 0, len = commands.length; idx < len; idx++) {
+                this[commands[idx]] = (function (sCmd) {
+                    return function ($editable) {
+                        beforeCommand($editable);
+                        document.execCommand(sCmd, false);
+                        afterCommand($editable);
+                    };
+                })(commands[idx]);
+            }
+        };
 
-                    document.execCommand(sCmd, false, value);
+        this.disableFontStyling = function () {
+            var styleInfo = this.currentStyle() || {};
+            for (var idx = 0, len = commands.length; idx < len; idx++) {
+                if (styleInfo[commands[idx]]) {
+                    // disable styling if enabled
+                    document.execCommand(commands[idx], false);
+                }
 
-                    afterCommand($editable);
-                };
-            })(commands[idx]);
-        }
+                delete this[commands[idx]];
+            }
+        };
+
         /* jshint ignore:end */
 
         /**
@@ -237,8 +252,6 @@ define([
             afterCommand($editable);
         };
 
-
-
         /**
          * set focus
          *
@@ -247,6 +260,7 @@ define([
         this.focus = function ($editable) {
             $editable.focus();
         };
+
     };
 
     return Editor;
