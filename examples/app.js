@@ -63,7 +63,6 @@ $(document).ready(function() {
                 text = window.clipboardData.getData('Text');
             } else if (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData) {
                 text = e.originalEvent.clipboardData.getData('text/plain');
-                console.log(text);
             }
 
             text = text.trim();
